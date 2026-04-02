@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FunWorld | Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans" x-data="funWorldApp()" x-init="initApp()" x-cloak>
+
+    <div x-show="!isAuthenticated && !isLoading"
+        class="min-h-screen flex items-center justify-center bg-gray-100 absolute inset-0 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="text-4xl mb-2">🎡</div>
+                <h2 class="text-2xl font-bold text-gray-800">Admin Authentication</h2>
+                <p class="text-gray-500 text-sm">Sign in to access the FunWorld dashboard</p>
+            </div>
+
+            <div x-show="loginError" class="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm font-semibold"
+                x-text="loginError"></div>
+
+            <form @submit.prevent="login" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Username</label>
+                    <input x-model="authForm.username" type="text"
+                        class="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                    <input x-model="authForm.password" type="password"
+                        class="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        required>
+                </div>
+                <button type="submit"
+                    class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded hover:bg-indigo-700 transition">
+                    Secure Login
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="isAuthenticated" class="min-h-screen">
+        <nav class="bg-indigo-700 text-white p-4 shadow-lg flex justify-between items-center">
+            <div class="text-2xl font-bold flex items-center gap-2">
+                <span class="text-3xl">🎡</span> FunWorld
+            </div>
+            <div class="space-x-4 flex items-center">
+                <span class="text-sm bg-indigo-800 px-3 py-1 rounded-full border border-indigo-600"
+                    x-text="'Admin: ' + currentUser"></span>
+                <button @click="logout"
+                    class="hover:bg-red-600 bg-red-500 px-3 py-2 rounded transition text-sm font-bold shadow-md">
+                    <i class="fa-solid fa-sign-out-alt mr-1"></i> Logout
+                </button>
+            </div>
+        </nav>
+
+        <main class="max-w-6xl mx-auto p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                    <p class="text-gray-500 text-sm font-semibold uppercase">Tickets Sold (Total)</p>
+                    <p class="text-2xl font-bold text-gray-800" x-text="stats.total_tickets || 0"></p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500">
+                    <p class="text-gray-500 text-sm font-semibold uppercase">Total Revenue</p>
+                    <p class="text-2xl font-bold text-gray-800" x-text="'₹' + (stats.total_revenue || 0)"></p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500">
+                    <p class="text-gray-500 text-sm font-semibold uppercase">Total Check-ins</p>
+                    <p class="text-2xl font-bold text-gray-800" x-text="stats.checked_in || 0"></p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-yellow-500">
+                    <p class="text-gray-500 text-sm font-semibold uppercase">Active Rides</p>
+                    <p class="text-2xl font-bold text-gray-800"
+                        x-text="(stats.open_rides || 0) + ' / ' + (stats.total_rides || 0)"></p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+                <div class="flex border-b">
+                    <button @click="activeTab = 'booking'"
+                        :class="activeTab === 'booking' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500'"
+                        class="flex-1 py-4 font-medium transition hover:bg-gray-50">🎟️ Public Booking Sim</button>
+                    <button @click="activeTab = 'rides'"
+                        :class="activeTab === 'rides' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500'"
+                        class="flex-1 py-4 font-medium transition hover:bg-gray-50">🎢 Ride Operations</button>
+                </div>
+
+                <div x-show="activeTab === 'booking'" class="p-8 animate-fadeIn">
+                    <h3 class="text-xl font-bold mb-6">Simulate Ticket Purchase</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <template x-for="ticket in ticketTypes" :key="ticket.id">
+                            <button @click="selectedTicket = ticket"
+                                :class="selectedTicket.id === ticket.id ? 'border-indigo-600 bg-indigo-50 shadow-md' : 'border-gray-200'"
+                                class="p-4 border-2 rounded-xl text-left transition hover:border-indigo-400 group">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-2xl" x-text="ticket.icon"></span>
+                                    <span class="font-bold text-indigo-600" x-text="'₹' + ticket.price"></span>
+                                </div>
+                                <p class="mt-2 font-bold text-gray-800" x-text="ticket.name"></p>
+                                <p class="text-xs text-gray-500" x-text="ticket.description"></p>
+                            </button>
+                        </template>
+                    </div>
+
+                    <div class="mt-8 p-6 bg-gray-50 rounded-xl border-dashed border-2 border-gray-200">
+                        <div x-show="selectedTicket.id" class="max-w-md mx-auto">
+                            <h4 class="font-bold mb-4 border-b pb-2">Guest Details</h4>
+                            <form @submit.prevent="bookTicket" class="space-y-3">
+                                <input x-model="bookingForm.name" type="text" placeholder="Full Name" required
+                                    class="w-full p-2 border rounded">
+                                <input x-model="bookingForm.email" type="email" placeholder="Email Address" required
+                                    class="w-full p-2 border rounded">
+                                <input x-model="bookingForm.visit_date" type="date" required
+                                    class="w-full p-2 border rounded">
+                                <button type="submit"
+                                    class="w-full bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-indigo-700 mt-4">Process
+                                    Payment & Generate QR</button>
+                            </form>
+                            <div x-show="bookingMessage"
+                                class="mt-4 p-3 bg-green-100 text-green-800 rounded text-center font-bold"
+                                x-text="bookingMessage"></div>
+                        </div>
+                        <div x-show="!selectedTicket.id" class="text-center text-gray-400 italic">Select a ticket
+                            package above to continue</div>
+                    </div>
+                </div>
+
+                <div x-show="activeTab === 'rides'" class="p-6 animate-fadeIn">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-gray-400 border-b">
+                                <th class="pb-4 font-medium">Ride Name</th>
+                                <th class="pb-4 font-medium">Category</th>
+                                <th class="pb-4 font-medium">Status</th>
+                                <th class="pb-4 font-medium text-right">Operational Control</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="ride in rides" :key="ride.id">
+                                <tr class="border-b last:border-0 hover:bg-gray-50 transition">
+                                    <td class="py-4 font-semibold text-gray-700" x-text="ride.name"></td>
+                                    <td class="py-4 text-sm text-gray-500" x-text="ride.category"></td>
+                                    <td class="py-4">
+                                        <span :class="{
+                                            'bg-green-100 text-green-700': ride.status === 'open',
+                                            'bg-red-100 text-red-700': ride.status === 'closed',
+                                            'bg-yellow-100 text-yellow-700': ride.status === 'maintenance'
+                                        }" class="px-3 py-1 rounded-full text-xs font-bold uppercase"
+                                            x-text="ride.status"></span>
+                                    </td>
+                                    <td class="py-4 text-right">
+                                        <select x-model="ride.status"
+                                            @change="updateRideStatus(ride.id, $event.target.value)"
+                                            class="text-sm border rounded p-1 outline-none focus:ring-2 ring-indigo-300">
+                                            <option value="open">Open</option>
+                                            <option value="closed">Closed</option>
+                                            <option value="maintenance">Maintenance</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function funWorldApp() {
+            return {
+                isLoading: true,
+                isAuthenticated: false,
+                currentUser: '',
+                activeTab: 'booking',
+
+                // Auth Data
+                authForm: { username: '', password: '' },
+                loginError: '',
+
+                // App Data
+                stats: {},
+                ticketTypes: [],
+                rides: [],
+
+                // Booking Form
+                selectedTicket: {},
+                bookingForm: { name: '', email: '', visit_date: new Date().toISOString().split('T')[0] },
+                bookingMessage: '',
+
+                async initApp() {
+                    await this.checkAuth();
+                    if (this.isAuthenticated) {
+                        this.loadDashboardData();
+                    }
+                    this.isLoading = false;
+                },
+
+                async checkAuth() {
+                    try {
+                        const res = await fetch('/api/check-auth');
+                        if (res.ok) {
+                            const data = await res.json();
+                            this.isAuthenticated = data.authenticated;
+                            this.currentUser = data.username;
+                        } else {
+                            this.isAuthenticated = false;
+                        }
+                    } catch (e) {
+                        this.isAuthenticated = false;
+                    }
+                },
+
+                async login() {
+                    this.loginError = '';
+                    try {
+                        const res = await fetch('/api/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.authForm)
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            this.isAuthenticated = true;
+                            this.authForm.password = ''; // Clear memory
+                            await this.checkAuth();
+                            this.loadDashboardData();
+                        } else {
+                            this.loginError = data.error || 'Login failed';
+                        }
+                    } catch (e) {
+                        this.loginError = 'Connection error. Is the server running?';
+                    }
+                },
+
+                async logout() {
+                    await fetch('/api/logout', { method: 'POST' });
+                    this.isAuthenticated = false;
+                    this.currentUser = '';
+                    this.stats = {};
+                    this.rides = [];
+                },
+
+                async loadDashboardData() {
+                    // Fetch real data from the backend
+                    const [statsRes, typesRes, ridesRes] = await Promise.all([
+                        fetch('/api/stats'),
+                        fetch('/api/ticket-types'),
+                        fetch('/api/rides')
+                    ]);
+
+                    if (statsRes.ok) this.stats = await statsRes.json();
+                    if (typesRes.ok) this.ticketTypes = await typesRes.json();
+                    if (ridesRes.ok) this.rides = await ridesRes.json();
+                },
+
+                async bookTicket() {
+                    const payload = {
+                        ...this.bookingForm,
+                        ticket_type_id: this.selectedTicket.id,
+                        quantity: 1
+                    };
+
+                    const res = await fetch('/api/book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        this.bookingMessage = "Ticket Booked Successfully!";
+                        this.bookingForm.name = '';
+                        this.bookingForm.email = '';
+                        this.loadDashboardData(); // Refresh stats
+                        setTimeout(() => this.bookingMessage = '', 3000);
+                    }
+                },
+
+                async updateRideStatus(id, newStatus) {
+                    await fetch(`/api/rides/${id}/status`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    this.loadDashboardData(); // Refresh stats
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
