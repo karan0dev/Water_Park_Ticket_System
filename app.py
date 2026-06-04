@@ -12,11 +12,12 @@ from datetime import datetime, date, timedelta
 import os
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True) # Required for session cookies
-app.secret_key = "amusement_park_secret_2024" # Must be changed in production
+CORS(app, supports_credentials=True)
+app.secret_key = "amusement_park_secret_2026"
 
 # ─── Database Configuration ───────────────────────────────────────────────────
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:MyNewPassword@localhost/amusement_park'
+# Requires PyMySQL: pip install pymysql
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:MyNewPassword@localhost/water_park'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -87,7 +88,7 @@ class TicketType(db.Model):
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text)
-    color = db.Column(db.String(20), default='#ff6b35')
+    color = db.Column(db.String(20), default='#0284c7')
     icon = db.Column(db.String(10), default='🎟️')
 
     def to_dict(self):
@@ -98,34 +99,31 @@ class TicketType(db.Model):
 def init_db():
     db.create_all()
 
-    # Seed default admin if missing
     if Admin.query.count() == 0:
         default_admin = Admin(username="admin")
-        default_admin.set_password("admin123") # Change this immediately in production
+        default_admin.set_password("admin123") 
         db.session.add(default_admin)
 
     if TicketType.query.count() == 0:
         types = [
-            TicketType(name="Child (3-12 yrs)", price=599.0, description="Access to all child-friendly rides", color="#4ecdc4", icon="🧒"),
-            TicketType(name="Adult (13-59 yrs)", price=999.0, description="Full park access with all rides", color="#ff6b35", icon="🎢"),
-            TicketType(name="Senior (60+ yrs)", price=699.0, description="Full park access with priority queuing", color="#a8dadc", icon="👴"),
-            TicketType(name="Family Pack (2+2)", price=2999.0, description="2 Adults + 2 Children with 10% discount", color="#e63946", icon="👨‍👩‍👧‍👦"),
-            TicketType(name="VIP Pass", price=3999.0, description="Skip-the-line + premium lounge access", color="#ffd700", icon="⭐")
+            TicketType(name="Toddler Splash (< 3ft)", price=399.0, description="Access to shallow pools and mini slides", color="#06b6d4", icon="👶"),
+            TicketType(name="General Admission", price=1099.0, description="Full water park access", color="#0ea5e9", icon="🌊"),
+            TicketType(name="Cabana VIP Pass", price=4500.0, description="Private shaded cabana, fast-pass for slides", color="#8b5cf6", icon="🏖️"),
+            TicketType(name="Family Wave Pack", price=3499.0, description="2 Adults + 2 Children + Free Locker", color="#10b981", icon="👨‍👩‍👧‍👦"),
+            TicketType(name="Sunset Pass (After 3PM)", price=699.0, description="Discounted evening access", color="#f59e0b", icon="🌇")
         ]
         db.session.bulk_save_objects(types)
 
     if Ride.query.count() == 0:
         rides = [
-            Ride(name="Dragon Coaster", category="Thrill", status="open", wait_time=15, capacity=80, min_height=140, thrill_level="extreme", description="India's fastest steel roller coaster"),
-            Ride(name="Splash Canyon", category="Water", status="open", wait_time=20, capacity=60, min_height=110, thrill_level="moderate", description="White water rafting adventure"),
-            Ride(name="Sky Drop", category="Thrill", status="open", wait_time=10, capacity=40, min_height=150, thrill_level="extreme", description="Free-fall from 60 meters high"),
-            Ride(name="Merry-Go-Round", category="Kids", status="open", wait_time=5, capacity=30, min_height=0, thrill_level="mild", description="Classic carousel for all ages"),
-            Ride(name="Haunted Mansion", category="Adventure", status="open", wait_time=25, capacity=50, min_height=100, thrill_level="moderate", description="Spine-chilling ghost house"),
-            Ride(name="Bumper Cars", category="Fun", status="open", wait_time=8, capacity=40, min_height=120, thrill_level="mild", description="Classic bumper car arena"),
-            Ride(name="Giant Ferris Wheel", category="Scenic", status="open", wait_time=12, capacity=60, min_height=0, thrill_level="mild", description="360° panoramic view of the park"),
-            Ride(name="Tornado Twister", category="Thrill", status="maintenance", wait_time=0, capacity=70, min_height=130, thrill_level="high", description="Spinning high-speed adventure"),
-            Ride(name="Mini Train", category="Kids", status="open", wait_time=3, capacity=50, min_height=0, thrill_level="mild", description="Scenic train ride around the park"),
-            Ride(name="Virtual Reality Zone", category="Tech", status="open", wait_time=18, capacity=30, min_height=0, thrill_level="moderate", description="Immersive VR gaming experience")
+            Ride(name="Tsunami Wave Pool", category="Pool", status="open", wait_time=0, capacity=500, min_height=0, thrill_level="mild", description="Massive artificial wave generator"),
+            Ride(name="Kamikaze Freefall", category="Slide", status="open", wait_time=25, capacity=1, min_height=140, thrill_level="extreme", description="Near-vertical 80ft body slide"),
+            Ride(name="Lazy River", category="Float", status="open", wait_time=5, capacity=200, min_height=0, thrill_level="mild", description="Relaxing continuous current loop"),
+            Ride(name="Kraken Multi-Racer", category="Slide", status="open", wait_time=15, capacity=6, min_height=110, thrill_level="moderate", description="6-lane competitive mat racer"),
+            Ride(name="Typhoon Funnel", category="Raft", status="maintenance", wait_time=0, capacity=4, min_height=120, thrill_level="high", description="4-person raft drop into a massive funnel"),
+            Ride(name="Pirate Splash Cove", category="Kids", status="open", wait_time=0, capacity=100, min_height=0, thrill_level="mild", description="Interactive water playground with tipping bucket"),
+            Ride(name="Master Blaster Water Coaster", category="Thrill", status="open", wait_time=40, capacity=2, min_height=122, thrill_level="high", description="Uphill water jet propulsion coaster"),
+            Ride(name="Bermuda Triangle Enclosed", category="Slide", status="open", wait_time=20, capacity=1, min_height=120, thrill_level="high", description="Pitch-black enclosed tube slide")
         ]
         db.session.bulk_save_objects(rides)
         
@@ -137,7 +135,7 @@ def generate_qr(data: str) -> str:
     qr = qrcode.QRCode(version=1, box_size=6, border=2)
     qr.add_data(data)
     qr.make(fit=True)
-    img = qr.make_image(fill_color="#1a1a2e", back_color="white")
+    img = qr.make_image(fill_color="#083344", back_color="white")
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
@@ -375,8 +373,8 @@ if __name__ == "__main__":
         init_db()
         
     print("=" * 55)
-    print("  🎢  Smart Amusement Park Ticket System (Production Ready)")
+    print("  🌊  AquaSplash Water Park System (Production Ready)")
     print("  🌐  http://127.0.0.1:5000")
     print("  🔑  Default Admin Login: admin / admin123")
     print("=" * 55)
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', debug=True, port=5000)

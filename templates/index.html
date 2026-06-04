@@ -4,11 +4,552 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FunWorld | Admin Dashboard</title>
+    <title>AquaSplash | Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --bg: #f0fdfa;
+            --white: #ffffff;
+            --border: #cffafe;
+            --text: #083344;
+            --muted: #0e7490;
+            --soft: #e0f2fe;
+            --orange: #0284c7;
+            --orange-light: #e0f2fe;
+            --orange-mid: #bae6fd;
+            --blue: #0ea5e9;
+            --blue-light: #e0f2fe;
+            --green: #059669;
+            --green-light: #d1fae5;
+            --yellow: #0284c7;
+            --yellow-light: #e0f2fe;
+            --purple: #4f46e5;
+            --purple-light: #e0e7ff;
+            --pink: #0891b2;
+            --pink-light: #cffafe;
+            --radius: 16px;
+            --shadow: 0 2px 16px rgba(8, 51, 68, 0.05);
+            --shadow-md: 0 6px 28px rgba(8, 51, 68, 0.08);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        nav {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2.5rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 0 var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            border-radius: 11px;
+            display: grid;
+            place-items: center;
+            font-size: 19px;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+
+        .logo em {
+            color: var(--orange);
+            font-style: normal;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px 6px 8px;
+            background: var(--soft);
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .admin-avatar {
+            width: 26px;
+            height: 26px;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 11px;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .admin-pill b {
+            color: var(--text);
+        }
+
+        .btn-logout {
+            padding: 8px 18px;
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.18s;
+        }
+
+        .btn-logout:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+            background: var(--orange-light);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+            padding: 2rem 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.4rem 1.6rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 11px;
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+        }
+
+        .stat-icon.orange {
+            background: var(--orange-light);
+        }
+
+        .stat-icon.green {
+            background: var(--green-light);
+        }
+
+        .stat-icon.blue {
+            background: var(--blue-light);
+        }
+
+        .stat-icon.yellow {
+            background: var(--yellow-light);
+        }
+
+        .stat-trend {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+
+        .up {
+            background: var(--green-light);
+            color: var(--green);
+        }
+
+        .live {
+            background: var(--orange-light);
+            color: var(--orange);
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .stat-value sub {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 0;
+            vertical-align: baseline;
+        }
+
+        .content {
+            padding: 0 2.5rem 4rem;
+            width: 100%;
+        }
+
+        .tabs-wrap {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 5px;
+            display: flex;
+            gap: 3px;
+            width: fit-content;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .tab {
+            padding: 9px 20px;
+            border-radius: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.83rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--muted);
+            transition: all 0.18s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab.active {
+            background: var(--orange);
+            color: #fff;
+            box-shadow: 0 3px 12px rgba(2, 132, 199, 0.3);
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--soft);
+            color: var(--text);
+        }
+
+        .section-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 1.4rem;
+        }
+
+        .section-head h2 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .section-head p {
+            color: var(--muted);
+            font-size: 0.84rem;
+            margin-top: 3px;
+        }
+
+        .tickets-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .ticket-card {
+            background: var(--white);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+
+        .ticket-card:hover {
+            border-color: #7dd3fc;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .ticket-emoji-wrap {
+            width: 46px;
+            height: 46px;
+            border-radius: 13px;
+            display: grid;
+            place-items: center;
+            font-size: 22px;
+            margin-bottom: 14px;
+        }
+
+        .ticket-price {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .ticket-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .ticket-desc {
+            font-size: 0.72rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .tc-o .ticket-emoji-wrap {
+            background: var(--orange-light);
+        }
+
+        .tc-o .ticket-price {
+            color: var(--orange);
+        }
+
+        .tc-o.selected {
+            border-color: var(--orange);
+            background: var(--orange-light);
+            box-shadow: 0 0 0 1px var(--orange), 0 8px 24px rgba(2, 132, 199, 0.15);
+        }
+
+        .tc-b .ticket-emoji-wrap {
+            background: var(--blue-light);
+        }
+
+        .tc-b .ticket-price {
+            color: var(--blue);
+        }
+
+        .tc-b.selected {
+            border-color: var(--blue);
+            background: var(--blue-light);
+            box-shadow: 0 0 0 1px var(--blue), 0 8px 24px rgba(14, 165, 233, 0.15);
+        }
+
+        .tc-g .ticket-emoji-wrap {
+            background: var(--green-light);
+        }
+
+        .tc-g .ticket-price {
+            color: var(--green);
+        }
+
+        .tc-g.selected {
+            border-color: var(--green);
+            background: var(--green-light);
+            box-shadow: 0 0 0 1px var(--green), 0 8px 24px rgba(5, 150, 105, 0.15);
+        }
+
+        .tc-p .ticket-emoji-wrap {
+            background: var(--pink-light);
+        }
+
+        .tc-p .ticket-price {
+            color: var(--pink);
+        }
+
+        .tc-p.selected {
+            border-color: var(--pink);
+            background: var(--pink-light);
+            box-shadow: 0 0 0 1px var(--pink), 0 8px 24px rgba(8, 145, 178, 0.15);
+        }
+
+        .tc-y .ticket-emoji-wrap {
+            background: var(--yellow-light);
+        }
+
+        .tc-y .ticket-price {
+            color: var(--yellow);
+        }
+
+        .tc-y.selected {
+            border-color: var(--yellow);
+            background: var(--yellow-light);
+            box-shadow: 0 0 0 1px var(--yellow), 0 8px 24px rgba(2, 132, 199, 0.15);
+        }
+
+        .check-ring {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: grid;
+            place-items: center;
+            font-size: 11px;
+            color: transparent;
+            transition: all 0.18s;
+        }
+
+        .ticket-card.selected .check-ring {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: #fff;
+        }
+
+        .tc-b.selected .check-ring {
+            background: var(--blue);
+            border-color: var(--blue);
+        }
+
+        .tc-g.selected .check-ring {
+            background: var(--green);
+            border-color: var(--green);
+        }
+
+        .tc-p.selected .check-ring {
+            background: var(--pink);
+            border-color: var(--pink);
+        }
+
+        .tc-y.selected .check-ring {
+            background: var(--yellow);
+            border-color: var(--yellow);
+        }
+
+        .bottom-row {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 1.5rem;
+            align-items: stretch;
+        }
+
+        .form-card,
+        .summary-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.8rem;
+            box-shadow: var(--shadow);
+        }
+
+        .form-card h3,
+        .summary-card h3 {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 1.2rem;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--muted);
+        }
+
+        .field input {
+            width: 100%;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 13px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.88rem;
+            color: var(--text);
+            background: var(--bg);
+            outline: none;
+            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+        }
+
+        .field input:focus {
+            border-color: var(--orange);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 1.2rem;
+            box-shadow: 0 4px 18px rgba(2, 132, 199, 0.35);
+            transition: all 0.2s;
+        }
+
+        .btn-pay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(2, 132, 199, 0.4);
+        }
+
         .animate-fadeIn {
             animation: fadeIn 0.3s ease-in;
         }
@@ -25,292 +566,429 @@
             }
         }
 
-        [x-cloak] {
-            display: none !important;
+        #reader video {
+            border-radius: 8px;
         }
     </style>
 </head>
 
-<body class="bg-gray-50 font-sans" x-data="funWorldApp()" x-init="initApp()" x-cloak>
+<body x-data="funWorldApp()" x-init="initApp()" x-cloak>
 
-    <div x-show="!isAuthenticated && !isLoading"
-        class="min-h-screen flex items-center justify-center bg-gray-100 absolute inset-0 z-50">
-        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <div x-show="!isAuthenticated"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
+        <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
-                <div class="text-4xl mb-2">🎡</div>
-                <h2 class="text-2xl font-bold text-gray-800">Admin Authentication</h2>
-                <p class="text-gray-500 text-sm">Sign in to access the FunWorld dashboard</p>
+                <div class="logo-icon mx-auto mb-4" style="width:60px;height:60px;font-size:30px;">🌊</div>
+                <h2 class="text-2xl font-extrabold tracking-tight text-gray-800">Admin Portal</h2>
             </div>
-
-            <div x-show="loginError" class="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm font-semibold"
+            <div x-show="loginError" class="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-bold text-center"
                 x-text="loginError"></div>
-
-            <form @submit.prevent="login" class="space-y-4">
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Username</label>
-                    <input x-model="authForm.username" type="text"
-                        class="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        required>
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input x-model="authForm.password" type="password"
-                        class="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        required>
-                </div>
+            <form @submit.prevent="login" class="space-y-5">
+                <input x-model="authForm.username" type="text" placeholder="Username" required
+                    class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-sky-500">
+                <input x-model="authForm.password" type="password" placeholder="Password" required
+                    class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-sky-500">
                 <button type="submit"
-                    class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded hover:bg-indigo-700 transition">
-                    Secure Login
-                </button>
+                    class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all">Sign
+                    In</button>
             </form>
         </div>
     </div>
 
-    <div x-show="isAuthenticated" class="min-h-screen">
-        <nav class="bg-indigo-700 text-white p-4 shadow-lg flex justify-between items-center">
-            <div class="text-2xl font-bold flex items-center gap-2">
-                <span class="text-3xl">🎡</span> FunWorld
+    <div x-show="isAuthenticated">
+
+        <nav>
+            <div class="logo">
+                <div class="logo-icon">🌊</div>Aqua<em>Splash</em>
             </div>
-            <div class="space-x-4 flex items-center">
-                <span class="text-sm bg-indigo-800 px-3 py-1 rounded-full border border-indigo-600"
-                    x-text="'Admin: ' + currentUser"></span>
-                <button @click="logout"
-                    class="hover:bg-red-600 bg-red-500 px-3 py-2 rounded transition text-sm font-bold shadow-md">
-                    <i class="fa-solid fa-sign-out-alt mr-1"></i> Logout
-                </button>
+            <div class="nav-right">
+                <div class="admin-pill">
+                    <div class="admin-avatar">A</div>Admin: <b x-text="currentUser"></b>
+                </div>
+                <button @click="logout" class="btn-logout"><i class="fa-solid fa-power-off"></i> Logout</button>
             </div>
         </nav>
 
-        <main class="max-w-6xl mx-auto p-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-indigo-500">
-                    <p class="text-gray-500 text-sm font-semibold uppercase">Tickets Sold (Total)</p>
-                    <p class="text-2xl font-bold text-gray-800" x-text="stats.total_tickets || 0"></p>
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div class="stat-icon orange">🎟</div>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500">
-                    <p class="text-gray-500 text-sm font-semibold uppercase">Total Revenue</p>
-                    <p class="text-2xl font-bold text-gray-800" x-text="'₹' + (stats.total_revenue || 0)"></p>
+                <div class="stat-label">Tickets Sold</div>
+                <div class="stat-value" x-text="stats.total_tickets">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div class="stat-icon green">💰</div>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500">
-                    <p class="text-gray-500 text-sm font-semibold uppercase">Total Check-ins</p>
-                    <p class="text-2xl font-bold text-gray-800" x-text="stats.checked_in || 0"></p>
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-value" x-text="'₹' + (stats.total_revenue || 0)">₹0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div class="stat-icon blue">✅</div><span class="stat-trend live">● Live</span>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-yellow-500">
-                    <p class="text-gray-500 text-sm font-semibold uppercase">Active Rides</p>
-                    <p class="text-2xl font-bold text-gray-800"
-                        x-text="(stats.open_rides || 0) + ' / ' + (stats.total_rides || 0)"></p>
+                <div class="stat-label">Total Check-ins</div>
+                <div class="stat-value" x-text="stats.checked_in">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-top">
+                    <div class="stat-icon yellow">🛝</div>
                 </div>
+                <div class="stat-label">Active Attractions</div>
+                <div class="stat-value"><span x-text="stats.open_rides || 0"></span> <sub>/ <span
+                            x-text="stats.total_rides || 0"></span></sub></div>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <div class="tabs-wrap">
+                <button @click="activeTab = 'booking'" :class="activeTab === 'booking' ? 'tab active' : 'tab'">🎟 Public
+                    Booking Sim</button>
+                <button @click="activeTab = 'rides'" :class="activeTab === 'rides' ? 'tab active' : 'tab'">🛝 Attraction
+                    Operations</button>
+                <button @click="activeTab = 'checkin'" :class="activeTab === 'checkin' ? 'tab active' : 'tab'">🔍
+                    Validate Check-in</button>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-                <div class="flex border-b">
-                    <button @click="activeTab = 'booking'"
-                        :class="activeTab === 'booking' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500'"
-                        class="flex-1 py-4 font-medium transition hover:bg-gray-50">🎟️ Public Booking Sim</button>
-                    <button @click="activeTab = 'rides'"
-                        :class="activeTab === 'rides' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500'"
-                        class="flex-1 py-4 font-medium transition hover:bg-gray-50">🎢 Ride Operations</button>
+            <div x-show="activeTab === 'booking'" class="animate-fadeIn">
+                <div class="section-head">
+                    <div>
+                        <h2>Simulate Ticket Purchase</h2>
+                        <p>Choose a ticket type and fill in guest details to generate a QR-coded ticket.</p>
+                    </div>
                 </div>
 
-                <div x-show="activeTab === 'booking'" class="p-8 animate-fadeIn">
-                    <h3 class="text-xl font-bold mb-6">Simulate Ticket Purchase</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <template x-for="ticket in ticketTypes" :key="ticket.id">
-                            <button @click="selectedTicket = ticket"
-                                :class="selectedTicket.id === ticket.id ? 'border-indigo-600 bg-indigo-50 shadow-md' : 'border-gray-200'"
-                                class="p-4 border-2 rounded-xl text-left transition hover:border-indigo-400 group">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-2xl" x-text="ticket.icon"></span>
-                                    <span class="font-bold text-indigo-600" x-text="'₹' + ticket.price"></span>
-                                </div>
-                                <p class="mt-2 font-bold text-gray-800" x-text="ticket.name"></p>
-                                <p class="text-xs text-gray-500" x-text="ticket.description"></p>
-                            </button>
-                        </template>
-                    </div>
-
-                    <div class="mt-8 p-6 bg-gray-50 rounded-xl border-dashed border-2 border-gray-200">
-                        <div x-show="selectedTicket.id" class="max-w-md mx-auto">
-                            <h4 class="font-bold mb-4 border-b pb-2">Guest Details</h4>
-                            <form @submit.prevent="bookTicket" class="space-y-3">
-                                <input x-model="bookingForm.name" type="text" placeholder="Full Name" required
-                                    class="w-full p-2 border rounded">
-                                <input x-model="bookingForm.email" type="email" placeholder="Email Address" required
-                                    class="w-full p-2 border rounded">
-                                <input x-model="bookingForm.visit_date" type="date" required
-                                    class="w-full p-2 border rounded">
-                                <button type="submit"
-                                    class="w-full bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-indigo-700 mt-4">Process
-                                    Payment & Generate QR</button>
-                            </form>
-                            <div x-show="bookingMessage"
-                                class="mt-4 p-3 bg-green-100 text-green-800 rounded text-center font-bold"
-                                x-text="bookingMessage"></div>
+                <div class="tickets-grid">
+                    <template x-for="(ticket, idx) in ticketTypes" :key="ticket.id">
+                        <div class="ticket-card"
+                            :class="['tc-o', 'tc-b', 'tc-g', 'tc-p', 'tc-y'][idx % 5] + (selectedTicket.id === ticket.id ? ' selected' : '')"
+                            @click="selectedTicket = ticket">
+                            <div class="check-ring">✓</div>
+                            <div class="ticket-emoji-wrap" x-text="ticket.icon"></div>
+                            <div class="ticket-price" x-text="'₹' + ticket.price"></div>
+                            <div class="ticket-name" x-text="ticket.name"></div>
+                            <div class="ticket-desc" x-text="ticket.description"></div>
                         </div>
-                        <div x-show="!selectedTicket.id" class="text-center text-gray-400 italic">Select a ticket
-                            package above to continue</div>
+                    </template>
+                </div>
+
+                <div class="bottom-row">
+                    <div class="form-card">
+                        <h3>Guest Details</h3>
+                        <div class="bg-sky-50 text-sky-600 font-bold px-4 py-3 rounded-xl mb-4 text-sm flex justify-between border border-sky-100"
+                            x-show="selectedTicket.id">
+                            <span>Selected ticket</span>
+                            <span x-text="selectedTicket.name + ' · ₹' + selectedTicket.price"></span>
+                        </div>
+                        <div class="text-gray-400 italic mb-4 text-sm" x-show="!selectedTicket.id">No ticket selected
+                            yet — pick one above</div>
+
+                        <form @submit.prevent="bookTicket">
+                            <div class="grid grid-cols-2 gap-4 mb-3">
+                                <div class="field"><label>Full Name</label><input x-model="bookingForm.name" type="text"
+                                        placeholder="e.g. Rahul Sharma" required></div>
+                                <div class="field"><label>Email Address</label><input x-model="bookingForm.email"
+                                        type="email" placeholder="rahul@example.com" required></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="field"><label>Visit Date</label><input x-model="bookingForm.visit_date"
+                                        type="date" required></div>
+                                <div class="field"><label>Phone Number</label><input x-model="bookingForm.phone"
+                                        type="tel" placeholder="+91 98765 43210"></div>
+                            </div>
+                            <button type="submit" class="btn-pay">🎟 Process Payment & Generate QR</button>
+                        </form>
+                    </div>
+
+                    <div class="summary-card text-center flex flex-col justify-between">
+                        <h3 class="text-left mb-4">Order Output</h3>
+
+                        <div x-show="generatedTicket" class="animate-fadeIn w-full flex flex-col items-center">
+                            <div
+                                class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm w-full relative overflow-hidden mb-4">
+                                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-sky-400 to-sky-600">
+                                </div>
+
+                                <div class="mb-4 mt-2">
+                                    <div class="text-3xl mb-1">🌊</div>
+                                    <h4 class="font-extrabold text-lg text-gray-800 tracking-tight leading-tight">
+                                        AquaSplash Admittance</h4>
+                                    <p class="text-[10px] font-extrabold uppercase text-gray-400 tracking-widest mt-1">
+                                        Ticket ID: <span class="text-sky-500" x-text="generatedTicket?.id"></span>
+                                    </p>
+                                </div>
+
+                                <div class="p-3 bg-white rounded-xl border border-gray-100 inline-block mb-4 shadow-sm">
+                                    <img :src="generatedTicket?.qr_code" class="w-32 h-32 mx-auto" alt="Ticket QR">
+                                </div>
+
+                                <div class="space-y-1">
+                                    <p class="text-sm font-bold text-gray-800">Ready for the waves!</p>
+                                    <p class="text-xs text-gray-500 font-medium">Valid only on: <span
+                                            class="font-bold text-sky-500" x-text="generatedTicket?.visit_date"></span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button @click="downloadNativeTicket"
+                                class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-download"></i> Download E-Ticket
+                            </button>
+                        </div>
+
+                        <div x-show="!generatedTicket" class="py-12 text-gray-300 italic text-sm">
+                            Complete the form to issue a ticket
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div x-show="activeTab === 'rides'" class="p-6 animate-fadeIn">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-gray-400 border-b">
-                                <th class="pb-4 font-medium">Ride Name</th>
-                                <th class="pb-4 font-medium">Category</th>
-                                <th class="pb-4 font-medium">Status</th>
-                                <th class="pb-4 font-medium text-right">Operational Control</th>
+            <div x-show="activeTab === 'rides'"
+                class="animate-fadeIn bg-white rounded-[16px] shadow-[0_2px_16px_rgba(26,29,46,0.07)] border border-[#cffafe] overflow-hidden w-full">
+                <table class="w-full text-left">
+                    <thead
+                        class="bg-gray-50 text-[10px] font-extrabold uppercase tracking-widest text-gray-400 border-b border-[#cffafe]">
+                        <tr>
+                            <th class="px-8 py-5">Attraction Name</th>
+                            <th class="px-8 py-5">Status</th>
+                            <th class="px-8 py-5 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#cffafe]">
+                        <template x-for="ride in rides" :key="ride.id">
+                            <tr>
+                                <td class="px-8 py-6 font-bold text-gray-800" x-text="ride.name"></td>
+                                <td class="px-8 py-6">
+                                    <span
+                                        :class="{'bg-green-50 text-green-600': ride.status === 'open', 'bg-red-50 text-red-600': ride.status === 'closed', 'bg-yellow-50 text-yellow-600': ride.status === 'maintenance'}"
+                                        class="px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider"
+                                        x-text="ride.status"></span>
+                                </td>
+                                <td class="px-8 py-6 text-right">
+                                    <select @change="updateRideStatus(ride.id, $event.target.value)"
+                                        class="bg-gray-50 border border-gray-200 text-xs font-bold rounded-lg p-2 outline-none">
+                                        <option :selected="ride.status === 'open'" value="open">Open</option>
+                                        <option :selected="ride.status === 'closed'" value="closed">Closed</option>
+                                        <option :selected="ride.status === 'maintenance'" value="maintenance">
+                                            Maintenance</option>
+                                    </select>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <template x-for="ride in rides" :key="ride.id">
-                                <tr class="border-b last:border-0 hover:bg-gray-50 transition">
-                                    <td class="py-4 font-semibold text-gray-700" x-text="ride.name"></td>
-                                    <td class="py-4 text-sm text-gray-500" x-text="ride.category"></td>
-                                    <td class="py-4">
-                                        <span :class="{
-                                            'bg-green-100 text-green-700': ride.status === 'open',
-                                            'bg-red-100 text-red-700': ride.status === 'closed',
-                                            'bg-yellow-100 text-yellow-700': ride.status === 'maintenance'
-                                        }" class="px-3 py-1 rounded-full text-xs font-bold uppercase"
-                                            x-text="ride.status"></span>
-                                    </td>
-                                    <td class="py-4 text-right">
-                                        <select x-model="ride.status"
-                                            @change="updateRideStatus(ride.id, $event.target.value)"
-                                            class="text-sm border rounded p-1 outline-none focus:ring-2 ring-indigo-300">
-                                            <option value="open">Open</option>
-                                            <option value="closed">Closed</option>
-                                            <option value="maintenance">Maintenance</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <div x-show="activeTab === 'checkin'"
+                class="animate-fadeIn grid grid-cols-1 lg:grid-cols-2 gap-8 items-start w-full">
+
+                <div
+                    class="bg-white p-10 rounded-[16px] shadow-[0_2px_16px_rgba(26,29,46,0.07)] border border-[#cffafe] text-center">
+                    <div
+                        class="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
+                        🔍</div>
+                    <h3 class="font-extrabold text-2xl mb-2 text-gray-800">Gate Validation</h3>
+
+                    <div x-show="checkinMessage"
+                        class="mb-4 p-4 bg-green-50 text-green-700 rounded-xl text-sm font-bold"
+                        x-text="checkinMessage"></div>
+                    <div x-show="checkinError" class="mb-4 p-4 bg-red-50 text-red-700 rounded-xl text-sm font-bold"
+                        x-text="checkinError"></div>
+
+                    <div x-show="isScanning" class="mb-6 border-2 border-blue-500 rounded-xl overflow-hidden p-2">
+                        <div id="reader" class="w-full"></div>
+                        <button @click="stopScanner" type="button"
+                            class="mt-4 w-full bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2 rounded-lg transition-all text-sm">Cancel
+                            Scan</button>
+                    </div>
+
+                    <button x-show="!isScanning" @click="startScanner" type="button"
+                        class="mb-6 w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-camera"></i> Scan QR Ticket
+                    </button>
+
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="h-px bg-gray-200 flex-1"></div>
+                        <span class="text-[10px] text-gray-400 font-extrabold uppercase tracking-widest">Or enter manual
+                            ID</span>
+                        <div class="h-px bg-gray-200 flex-1"></div>
+                    </div>
+
+                    <form @submit.prevent="processCheckin" class="space-y-4">
+                        <input x-model="checkinForm.ticketId" type="text" placeholder="E.G. B832E5B3"
+                            class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl text-xl font-black text-center tracking-[0.4em] outline-none focus:border-sky-500 uppercase">
+                        <button type="submit"
+                            class="w-full bg-sky-500 hover:bg-sky-600 text-white font-extrabold py-4 rounded-xl shadow-md transition-all uppercase tracking-widest">Validate
+                            Entry</button>
+                    </form>
                 </div>
 
+                <div
+                    class="bg-white p-8 rounded-[16px] shadow-[0_2px_16px_rgba(26,29,46,0.07)] border border-[#cffafe]">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="font-extrabold text-lg flex items-center gap-2 text-gray-800"><span
+                                class="w-2.5 h-2.5 bg-sky-500 rounded-full animate-ping"></span> Live Arrivals
+                            (Today)</h3>
+                    </div>
+                    <div class="space-y-4 overflow-y-auto max-h-[400px] pr-2">
+                        <template
+                            x-for="t in allTickets.filter(t => t.visit_date === new Date().toISOString().split('T')[0])"
+                            :key="t.id">
+                            <div
+                                class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                <div>
+                                    <div class="text-sm font-extrabold text-gray-800" x-text="t.name"></div>
+                                    <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider"
+                                        x-text="t.ticket_type"></div>
+                                </div>
+                                <div class="text-right">
+                                    <div :class="t.checked_in ? 'text-green-500' : 'text-sky-500'"
+                                        class="text-[9px] font-black uppercase tracking-widest"
+                                        x-text="t.checked_in ? 'Admitted' : 'Expected'"></div>
+                                    <div class="text-[10px] font-mono text-gray-400 mt-0.5" x-text="t.id"></div>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="allTickets.filter(t => t.visit_date === new Date().toISOString().split('T')[0]).length === 0"
+                            class="text-center py-10 text-gray-400 text-sm">No arrivals expected for today.</div>
+                    </div>
+                </div>
             </div>
-        </main>
+
+        </div>
     </div>
 
     <script>
         function funWorldApp() {
             return {
-                isLoading: true,
-                isAuthenticated: false,
-                currentUser: '',
-                activeTab: 'booking',
-
-                // Auth Data
-                authForm: { username: '', password: '' },
-                loginError: '',
-
-                // App Data
-                stats: {},
-                ticketTypes: [],
-                rides: [],
-
-                // Booking Form
-                selectedTicket: {},
-                bookingForm: { name: '', email: '', visit_date: new Date().toISOString().split('T')[0] },
-                bookingMessage: '',
+                isAuthenticated: false, currentUser: '', activeTab: 'booking', loginError: '',
+                authForm: { username: '', password: '' }, stats: {}, ticketTypes: [], rides: [], allTickets: [],
+                selectedTicket: {}, generatedTicket: null, bookingForm: { name: '', email: '', phone: '', visit_date: new Date().toISOString().split('T')[0] },
+                checkinForm: { ticketId: '' }, checkinMessage: '', checkinError: '',
+                isScanning: false, qrScanner: null,
 
                 async initApp() {
-                    await this.checkAuth();
-                    if (this.isAuthenticated) {
+                    const res = await fetch('/api/check-auth');
+                    if (res.ok) {
+                        const data = await res.json();
+                        this.isAuthenticated = data.authenticated;
+                        this.currentUser = data.username;
                         this.loadDashboardData();
                     }
-                    this.isLoading = false;
                 },
-
-                async checkAuth() {
-                    try {
-                        const res = await fetch('/api/check-auth');
-                        if (res.ok) {
-                            const data = await res.json();
-                            this.isAuthenticated = data.authenticated;
-                            this.currentUser = data.username;
-                        } else {
-                            this.isAuthenticated = false;
-                        }
-                    } catch (e) {
-                        this.isAuthenticated = false;
-                    }
-                },
-
                 async login() {
                     this.loginError = '';
-                    try {
-                        const res = await fetch('/api/login', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.authForm)
-                        });
-                        const data = await res.json();
-                        if (res.ok) {
-                            this.isAuthenticated = true;
-                            this.authForm.password = ''; // Clear memory
-                            await this.checkAuth();
-                            this.loadDashboardData();
-                        } else {
-                            this.loginError = data.error || 'Login failed';
-                        }
-                    } catch (e) {
-                        this.loginError = 'Connection error. Is the server running?';
-                    }
+                    const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.authForm) });
+                    const data = await res.json();
+                    if (res.ok) { this.isAuthenticated = true; this.authForm.password = ''; this.initApp(); } else { this.loginError = data.error; }
                 },
-
-                async logout() {
-                    await fetch('/api/logout', { method: 'POST' });
-                    this.isAuthenticated = false;
-                    this.currentUser = '';
-                    this.stats = {};
-                    this.rides = [];
-                },
-
+                async logout() { await fetch('/api/logout', { method: 'POST' }); window.location.reload(); },
                 async loadDashboardData() {
-                    // Fetch real data from the backend
-                    const [statsRes, typesRes, ridesRes] = await Promise.all([
-                        fetch('/api/stats'),
-                        fetch('/api/ticket-types'),
-                        fetch('/api/rides')
+                    const [s, t, r, tk] = await Promise.all([
+                        fetch('/api/stats').then(r => r.json()), fetch('/api/ticket-types').then(r => r.json()),
+                        fetch('/api/rides').then(r => r.json()), fetch('/api/tickets').then(r => r.json())
                     ]);
-
-                    if (statsRes.ok) this.stats = await statsRes.json();
-                    if (typesRes.ok) this.ticketTypes = await typesRes.json();
-                    if (ridesRes.ok) this.rides = await ridesRes.json();
+                    this.stats = s; this.ticketTypes = t; this.rides = r; this.allTickets = tk;
                 },
-
                 async bookTicket() {
-                    const payload = {
-                        ...this.bookingForm,
-                        ticket_type_id: this.selectedTicket.id,
-                        quantity: 1
-                    };
-
-                    const res = await fetch('/api/book', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (res.ok) {
-                        this.bookingMessage = "Ticket Booked Successfully!";
-                        this.bookingForm.name = '';
-                        this.bookingForm.email = '';
-                        this.loadDashboardData(); // Refresh stats
-                        setTimeout(() => this.bookingMessage = '', 3000);
-                    }
+                    if (!this.selectedTicket.id) return alert('Please select a ticket type first!');
+                    const res = await fetch('/api/book', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...this.bookingForm, ticket_type_id: this.selectedTicket.id, quantity: 1 }) });
+                    const data = await res.json();
+                    if (res.ok) { this.generatedTicket = data.ticket; this.bookingForm.name = ''; this.bookingForm.email = ''; this.loadDashboardData(); }
+                },
+                async updateRideStatus(id, s) {
+                    await fetch(`/api/rides/${id}/status`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: s }) });
+                    this.loadDashboardData();
                 },
 
-                async updateRideStatus(id, newStatus) {
-                    await fetch(`/api/rides/${id}/status`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: newStatus })
-                    });
-                    this.loadDashboardData(); // Refresh stats
+                startScanner() {
+                    this.isScanning = true;
+                    this.checkinMessage = '';
+                    this.checkinError = '';
+
+                    setTimeout(() => {
+                        this.qrScanner = new Html5QrcodeScanner("reader", {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 },
+                            aspectRatio: 1.0
+                        }, false);
+
+                        this.qrScanner.render((decodedText) => {
+                            this.stopScanner();
+                            this.checkinForm.ticketId = decodedText;
+                            this.processCheckin();
+                        }, (errorMessage) => {
+                        });
+                    }, 100);
+                },
+                stopScanner() {
+                    if (this.qrScanner) {
+                        this.qrScanner.clear();
+                        this.qrScanner = null;
+                    }
+                    this.isScanning = false;
+                },
+
+                async processCheckin() {
+                    this.checkinMessage = ''; this.checkinError = '';
+                    const res = await fetch(`/api/checkin/${this.checkinForm.ticketId}`, { method: 'POST' });
+                    const data = await res.json();
+                    if (res.ok) { this.checkinMessage = data.message; this.checkinForm.ticketId = ''; this.loadDashboardData(); } else { this.checkinError = data.error; }
+                },
+
+                downloadNativeTicket() {
+                    if (!this.generatedTicket) return;
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 600;
+                    canvas.height = 700;
+                    const ctx = canvas.getContext('2d');
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+                    gradient.addColorStop(0, '#0284c7');
+                    gradient.addColorStop(1, '#06b6d4');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, canvas.width, 16);
+
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#083344';
+                    ctx.font = 'bold 36px Arial, sans-serif';
+                    ctx.fillText('AquaSplash Admittance', 300, 100);
+
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = 'bold 16px Arial, sans-serif';
+                    ctx.fillText(`TICKET ID: `, 250, 140);
+
+                    ctx.fillStyle = '#0284c7';
+                    ctx.fillText(`${this.generatedTicket.id}`, 330, 140);
+
+                    const img = new Image();
+                    img.onload = () => {
+                        ctx.drawImage(img, 150, 180, 300, 300);
+
+                        ctx.fillStyle = '#083344';
+                        ctx.font = 'bold 24px Arial, sans-serif';
+                        ctx.fillText('Ready for the waves!', 300, 540);
+
+                        ctx.fillStyle = '#64748b';
+                        ctx.font = '18px Arial, sans-serif';
+                        ctx.fillText('Valid only on: ', 240, 580);
+
+                        ctx.fillStyle = '#0284c7';
+                        ctx.font = 'bold 18px Arial, sans-serif';
+                        ctx.fillText(`${this.generatedTicket.visit_date}`, 350, 580);
+
+                        const link = document.createElement('a');
+                        link.download = `AquaSplash_Ticket_${this.generatedTicket.id}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    };
+                    img.src = this.generatedTicket.qr_code;
                 }
             }
         }
